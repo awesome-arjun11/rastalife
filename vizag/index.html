@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Travel Plan</title>
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+  />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Playfair+Display:wght@700&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+
+<body>
+  <div id="map"></div>
+
+  <div class="day-header">
+    <div class="day-title" id="dayTitle"></div>
+    <div class="day-subtitle" id="daySubtitle"></div>
+  </div>
+
+  <div class="timeline-pane" id="timelinePane">
+    <div class="timeline-header">
+      <button id="togglePaneBtn" title="Toggle timeline">↔</button>
+    </div>
+
+    <div class="timeline-content">
+      <div class="timeline" id="timeline"></div>
+    </div>
+
+    <div class="navigation-footer">
+      <p>Scroll or use arrow keys to navigate days</p>
+      <div class="navigation-buttons">
+        <button class="nav-btn" id="prevBtn">← Previous</button>
+        <button class="nav-btn" id="nextBtn">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-pane">
+    <div class="info-card">
+      <h3>Budget</h3>
+      <div id="budgetInfo"></div>
+    </div>
+    <div class="info-card">
+      <h3>Stay</h3>
+      <div id="accommodationInfo"></div>
+    </div>
+    <div class="info-card">
+      <h3>Highlights</h3>
+      <div id="highlightsInfo"></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+  <!-- Core engine -->
+  <script src="../shared/app.js"></script>
+
+  <!-- Trip-specific data -->
+  <script src="./trip.config.js"></script>
+</body>
+</html>

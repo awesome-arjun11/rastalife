@@ -1,645 +1,199 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kerala 9-Day Journey</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --glass-bg: rgba(25, 28, 35, 0.6);
-            --glass-border: rgba(255, 255, 255, 0.15);
-            --text-primary: #f0f0f0;
-            --text-secondary: #c4c2c2; /*#b0b0b0;*/
-            --accent-color: #00f2ea;
-            --marker-color: #ff6b6b;
-            --shadow-color: rgba(0, 0, 0, 0.3);
-            --body-bg: #111;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <title>My Travel Plans</title>
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--body-bg);
-            color: var(--text-primary);
-            overflow: hidden;
-            height: 100vh;
-            width: 100vw;
-        }
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Playfair+Display:wght@700&display=swap"
+    rel="stylesheet"
+  />
 
-        #map {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            background-color: #ccc; /* Fallback for light map */
-        }
-        
-        .leaflet-tile-pane {
-            /* Keep map tiles light */
-        }
+  <style>
+    :root {
+      --glass-bg: rgba(25, 28, 35, 0.6);
+      --glass-border: rgba(255, 255, 255, 0.15);
+      --text-primary: #f0f0f0;
+      --text-secondary: #b0b0b0;
+      --accent: #00f2ea;
+      --bg: #111;
+    }
 
-        .day-header {
-            position: fixed;
-            top: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-            text-align: center;
-            pointer-events: none;
-        }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .day-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 3.5em;
-            font-weight: 700;
-            color: #222; /* Text color for dark theme */
-            text-shadow: 0 2px 10px rgba(255, 255, 255, 0.5);
-            /*text-shadow: 0 2px 15px var(--shadow-color);*/
-        }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
 
-        .day-subtitle {
-            font-size: 1.2em;
-            color: #555;
-            text-shadow: 0 1px 3px rgba(255, 255, 255, 0.3);
-            margin-top: 5px;
-            
-        }
+    header {
+      text-align: center;
+      padding: 60px 20px 30px;
+    }
 
-        .timeline-pane {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 420px;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px) saturate(150%);
-            -webkit-backdrop-filter: blur(20px) saturate(150%);
-            border-right: 1px solid var(--glass-border);
-            z-index: 5;
-            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-            transform: translateX(0);
-            box-shadow: 5px 0 25px rgba(0,0,0,0.2);
-        }
-        
-        .timeline-pane.is-hidden {
-             transform: translateX(calc(-100% + 20px));
-             box-shadow: none;
-        }
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 3em;
+      margin-bottom: 10px;
+    }
 
-        .timeline-pane.is-hidden:hover {
-             transform: translateX(0);
-             box-shadow: 5px 0 25px rgba(0,0,0,0.2);
-        }
-        
-        .timeline-pane.is-hidden::after {
-            content: '';
-            position: absolute;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 5px;
-            height: 80px;
-            background: var(--accent-color);
-            border-radius: 5px;
-            opacity: 0.3;
-            transition: opacity 0.3s ease;
-        }
-        .timeline-pane:hover::after {
-            opacity: 0;
-        }
+    header p {
+      color: var(--text-secondary);
+      font-size: 1.1em;
+    }
 
-        .timeline-header {
-            padding: 20px 20px 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-shrink: 0;
-        }
-        
-        #togglePaneBtn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: var(--text-secondary);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1.2em;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        #togglePaneBtn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            color: var(--text-primary);
-        }
+    .timeline {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px 60px;
+      position: relative;
+    }
 
-        #getTipsBtn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(5px);
-            font-size: 0.9em;
-            font-weight: 500;
-        }
-        #getTipsBtn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0, 242, 234, 0.2);
-        }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--glass-border);
+      transform: translateX(-50%);
+    }
 
-        .timeline-content {
-            padding: 20px 40px;
-            flex-grow: 1;
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: var(--accent-color) transparent;
-        }
+    .trip {
+      position: relative;
+      width: 50%;
+      padding: 30px;
+    }
 
-        .timeline-content::-webkit-scrollbar { width: 6px; }
-        .timeline-content::-webkit-scrollbar-track { background: transparent; }
-        .timeline-content::-webkit-scrollbar-thumb {
-            background-color: var(--accent-color);
-            border-radius: 6px;
-        }
+    .trip.left { left: 0; text-align: right; }
+    .trip.right { left: 50%; }
 
-        .timeline { position: relative; padding: 10px 0 30px 30px; }
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: var(--glass-border);
-        }
+    .trip-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 25px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
 
-        .timeline-item {
-            position: relative;
-            margin-bottom: 25px;
-            padding: 15px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, opacity 0.3s ease;
-        }
-        
-        .timeline-item:not(.selected) { opacity: 0.75; }
-        .timeline-item:hover { opacity: 1; background-color: rgba(78, 205, 196, 0.1); }
-        
-        .timeline-item.selected {
-            opacity: 1;
-            background-color: rgba(78, 205, 196, 0.2);
-        }
+    .trip-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
 
-        .timeline-marker {
-            position: absolute;
-            left: -8px; 
-            top: 22px;
-            width: 18px;
-            height: 18px;
-            background: var(--body-bg);
-            border-radius: 50%;
-            border: 2px solid var(--marker-color);
-            transition: all 0.3s ease;
-        }
-        
-        .timeline-item:hover .timeline-marker,
-        .timeline-item.selected .timeline-marker {
-            transform: scale(1.2);
-            box-shadow: 0 0 15px var(--marker-color);
-        }
-        
-        .timeline-item.selected .timeline-marker {
-            background: var(--accent-color);
-            border-color: var(--accent-color);
-            box-shadow: 0 0 15px var(--accent-color);
-        }
+    .trip h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6em;
+    }
 
-        .timeline-time { font-weight: 500; color: var(--accent-color); font-size: 1.05em; margin-bottom: 8px; }
-        .timeline-title { font-size: 1.3em; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
-        .timeline-description { color: var(--text-secondary); line-height: 1.6; font-size: 1em; }
+    .trip .subtitle {
+      color: var(--text-secondary);
+      margin: 8px 0 15px;
+    }
 
-        .navigation-footer { padding: 20px 40px; text-align: center; color: var(--text-secondary); font-size: 0.9em; flex-shrink: 0; }
-        .navigation-buttons { display: flex; justify-content: space-between; margin-top: 10px; }
+    .trip .meta {
+      font-size: 0.9em;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
 
-        .nav-btn {
-            background: none; border: none; color: var(--text-secondary); cursor: pointer;
-            transition: all 0.3s ease; font-size: 1.1em; padding: 5px 10px;
-        }
-        .nav-btn:hover:not(:disabled) { color: var(--text-primary); }
-        .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .trip ul {
+      list-style: none;
+      margin-bottom: 15px;
+    }
 
-        .info-pane {
-            position: fixed; bottom: 20px; right: 20px;
-            display: flex; flex-direction: row; gap: 15px; z-index: 4;
-        }
+    .trip li {
+      font-size: 0.95em;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
 
-        .info-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border-radius: 12px; padding: 15px 20px;
-            border: 1px solid var(--glass-border);
-            color: white; min-width: 160px;
-            box-shadow: 0 4px 20px var(--shadow-color);
-        }
-        .info-card h3 { margin-bottom: 8px; color: var(--accent-color); font-size: 1em; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase;}
-        .info-card div { font-size: 1em; color: var(--text-secondary); }
-        
-        .pushpin-icon {
-            font-size: 28px;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        }
-        
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); z-index: 1000;
-            display: none; justify-content: center; align-items: center;
-        }
-        .modal-content {
-            background: rgba(30, 30, 35, 0.7);
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border-radius: 12px; padding: 30px;
-            border: 1px solid var(--glass-border);
-            width: 90%; max-width: 600px; max-height: 80vh;
-            overflow-y: auto; position: relative;
-            color: var(--text-primary);
-        }
-        .modal-close {
-            position: absolute; top: 15px; right: 15px;
-            background: none; border: none; font-size: 1.5em;
-            color: var(--text-secondary); cursor: pointer;
-        }
-        .modal-content h2 { color: var(--accent-color); margin-bottom: 15px; }
-        .modal-content p { line-height: 1.6; margin-bottom: 10px; }
-        
-        .loader {
-            border: 4px solid #f3f3f3; border-top: 4px solid var(--accent-color);
-            border-radius: 50%; width: 40px; height: 40px;
-            animation: spin 1s linear infinite; margin: 50px auto;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .trip a {
+      text-decoration: none;
+      color: var(--accent);
+      font-weight: 500;
+    }
 
-        @media (max-width: 900px) {
-            .info-pane { display: none; }
-            .timeline-pane { 
-                width: 100%;
-                transform: translateX(0);
-                box-shadow: none;
-            }
-            .timeline-pane.is-hidden {
-                transform: translateY(calc(100% - 80px));
-            }
-            .timeline-pane.is-hidden:hover {
-                transform: translateY(0);
-            }
-            #togglePaneBtn { display: none; }
-            .day-header {
-                position: absolute;
-                width: 100%;
-                padding: 0 20px;
-                box-sizing: border-box;
-            }
-            .day-title { font-size: 2.5em; }
-            .day-subtitle { font-size: 1em; }
-        }
-    </style>
+    .dot {
+      position: absolute;
+      top: 40px;
+      left: 50%;
+      width: 16px;
+      height: 16px;
+      background: var(--accent);
+      border-radius: 50%;
+      transform: translateX(-50%);
+      box-shadow: 0 0 15px var(--accent);
+    }
+
+    .status {
+      display: inline-block;
+      margin-left: 8px;
+      font-size: 0.75em;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.1);
+    }
+
+    @media (max-width: 900px) {
+      .timeline::before { left: 20px; }
+      .trip, .trip.left, .trip.right {
+        width: 100%;
+        left: 0;
+        padding-left: 50px;
+        text-align: left;
+      }
+      .dot { left: 20px; }
+    }
+  </style>
 </head>
+
 <body>
-    <div id="map"></div>
-    
-    <div class="day-header">
-        <div class="day-title" id="dayTitle">Day 1</div>
-        <div class="day-subtitle" id="daySubtitle">Kochi - Arrival & Fort Kochi Evening</div>
-    </div>
 
-    <div class="container">
-        <div class="timeline-pane" id="timelinePane">
-            <div class="timeline-header">
-                 <button id="togglePaneBtn" title="Toggle timeline pane">↔</button>
-                 <!--button id="getTipsBtn" title="Get AI-powered travel tips">✨ Get Travel Tips</button-->
-            </div>
-            <div class="timeline-content">
-                 <div class="timeline" id="timeline"></div>
-            </div>
-            <div class="navigation-footer">
-                <p>Scroll or use arrow keys to navigate days</p>
-                 <div class="navigation-buttons">
-                    <button class="nav-btn" id="prevBtn">← Previous</button>
-                    <button class="nav-btn" id="nextBtn">Next →</button>
-                </div>
-            </div>
+<header>
+  <h1>Rastalife Timeline</h1>
+  <p>Places explored, memories made, journeys ahead</p>
+</header>
+
+<div class="timeline" id="timeline"></div>
+
+<script src="./trips.config.js"></script>
+<script>
+  const timeline = document.getElementById("timeline");
+
+  window.TRIPS.forEach((trip, index) => {
+    const side = index % 2 === 0 ? "left" : "right";
+
+    const div = document.createElement("div");
+    div.className = `trip ${side}`;
+
+    div.innerHTML = `
+      <div class="dot"></div>
+      <div class="trip-card">
+        <div class="meta">
+          ${trip.coverEmoji} ${trip.date}
+          <span class="status">${trip.status}</span>
         </div>
+        <h2>${trip.title}</h2>
+        <div class="subtitle">${trip.subtitle}</div>
+        <ul>
+          ${trip.highlights.map(h => `<li>• ${h}</li>`).join("")}
+        </ul>
+        <a href="./${trip.id}/">View itinerary →</a>
+      </div>
+    `;
 
-        <div class="info-pane">
-            <div class="info-card"><h3>Budget</h3><div id="budgetInfo"></div></div>
-            <div class="info-card"><h3>Stay</h3><div id="accommodationInfo"></div></div>
-            <div class="info-card"><h3>Highlights</h3><div id="highlightsInfo"></div></div>
-        </div>
-    </div>
+    timeline.appendChild(div);
+  });
+</script>
 
-    <!-- Modal for AI Tips -->
-    <div class="modal-overlay" id="tipsModal">
-        <div class="modal-content">
-            <button class="modal-close" id="closeModalBtn">&times;</button>
-            <div id="modalBody">
-                <!-- AI tips will be loaded here -->
-            </div>
-        </div>
-    </div>
-
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script>
-        let map;
-        let currentDay = 0;
-        let markers = [];
-        let isChangingDay = false;
-
-        // Itinerary Data
-        const dayData = [
-            {
-                title: "Day 1",
-                subtitle: "Kochi - Arrival & Fort Kochi Evening",
-                center: [9.9312, 76.2673], budget: "₹3,600", accommodation: "Walton's Homestay, Fort Kochi", highlights: "Chinese fishing nets, St. Francis Church, Kerala cuisine",
-                timeline: [
-                    { time: "19:00 - 20:00", title: "Arrival at Kochi", description: "Arrive at Kochi Airport; take taxi or KSRTC bus to Fort Kochi", coords: [10.156675, 76.391727] },
-                    { time: "20:00 - 21:00", title: "Check-in", description: "Check-in at hotel/hostel near Fort Kochi", coords: [9.968346, 76.245216] },
-                    { time: "21:00 - 23:00", title: "Dinner & Stroll", description: "Walk along Burgher Street to see Chinese fishing nets and St. Francis Church. Dine at Kashi Art Café", coords: [9.965582, 76.240344] }
-                ]
-            },
-            {
-                title: "Day 2",
-                subtitle: "Athirappilly Waterfalls Day Trip",
-                center: [10.2851, 76.5703], budget: "₹5,500", accommodation: "Same Fort Kochi hotel", highlights: "Athirappilly Falls (80ft), Vazhachal Falls, rainforest",
-                timeline: [
-                    { time: "07:00 - 09:00", title: "Departure to Athirappilly", description: "Breakfast at Kashi or local stall. Board KSRTC bus to Athirappilly Falls (~2h) or take cab.", coords: [9.9312, 76.2673] },
-                    { time: "10:00 - 13:00", title: "Athirappilly Falls", description: "Explore Kerala's largest waterfall (80ft high), nature walks & local lunch", coords: [10.2851, 76.5703] },
-                    { time: "13:00 - 15:00", title: "Vazhachal Falls", description: "Continue to Vazhachal Falls (~10km away); spend ~1 hour", coords: [10.325, 76.59] },
-                    { time: "17:00 - 19:00", title: "Return to Kochi", description: "Return to Fort Kochi, rest and refresh", coords: [9.9312, 76.2673] }
-                ]
-            },
-            {
-                title: "Day 3",
-                subtitle: "Kochi - Workday & Local Sightseeing",
-                center: [9.9312, 76.2673], budget: "₹3,500", accommodation: "Same Fort Kochi hotel", highlights: "Mattancherry Palace, Jewish Synagogue, Marine Drive",
-                timeline: [
-                    { time: "10:00 - 13:00", title: "Work Session", description: "Work remotely at Kashi Art Café or Loafers Corner with good Wi-Fi", coords: [9.967006, 76.243112] },
-                    { time: "14:00 - 17:00", title: "Sightseeing", description: "Visit Mattancherry Dutch Palace & Jewish Synagogue", coords: [9.958446, 76.259350] },
-                    { time: "17:30 - 19:00", title: "Continue Work", description: "Second work block at Ernakulam malls (Mocha Café)", coords: [9.9804, 76.299] },
-                    { time: "21:00 - 22:00", title: "Marine Drive", description: "Evening stroll along Marine Drive promenade", coords: [9.983475, 76.274474] }
-                ]
-            },
-            {
-                title: "Day 4",
-                subtitle: "Kochi to Alappuzha - Backwater Houseboat",
-                center: [9.4981, 76.3388], budget: "₹9,800", accommodation: "Overnight houseboat (Vembanad Lake)", highlights: "Vembanad Lake, backwater cruise, sunset canoe ride",
-                timeline: [
-                    { time: "09:00 - 10:30", title: "Travel to Alleppey", description: "KSRTC bus from Kochi to Alleppey (~1.5h)", coords: [9.9312, 76.2673] },
-                    { time: "10:30 - 12:00", title: "Explore Alleppey", description: "Visit Alappuzha Beach and canal area", coords: [9.4981, 76.3388] },
-                    { time: "12:00 - 14:00", title: "Houseboat Check-in", description: "Board 3-bedroom houseboat departing around 3pm", coords: [9.52, 76.35] }
-                ]
-            },
-            {
-                title: "Day 5",
-                subtitle: "Alappuzha to Jatayu Earth Center",
-                center: [8.9642, 76.6936], budget: "₹3,600", accommodation: "Homestay in Kottarakkara", highlights: "Jatayu Rock sculpture, cable car ride, adventure park",
-                timeline: [
-                    { time: "07:00 - 08:00", title: "Disembark Houseboat", description: "Breakfast aboard houseboat; disembark", coords: [9.4981, 76.3388] },
-                    { time: "08:00 - 11:00", title: "Travel to Kottarakkara", description: "KSRTC bus to Chadayamangalam (~3h)", coords: [9.005991, 76.782322] },
-                    { time: "13:00 - 16:00", title: "Jatayu Earth Center", description: "Visit world's largest bird sculpture, cable car ride, explore caves", coords: [8.861669, 76.866483] },
-                    { time: "16:00 - 18:00", title: "Travel to Varkala", description: "Travel to Varkala (~1h), check-in at cliff hotel", coords: [8.740456, 76.716366] }
-                ]
-            },
-            {
-                title: "Day 6",
-                subtitle: "Jatayu Center to Varkala Cliffs",
-                center: [8.7379, 76.7160], budget: "₹4,300", accommodation: "Cliff-top hotel in Varkala", highlights: "Red laterite cliffs, Black Beach, cliff cafés",
-                timeline: [
-                    { time: "09:00 - 10:00", title: "Breakfast", description: "Breakfast at Coffee Temple or Clafouti with Wi-Fi", coords: [8.7379, 76.7160] },
-                    { time: "10:00 - 13:00", title: "Explore Varkala", description: "Explore Black Beach (Papanasam) & Red Cliff walk", coords: [8.733, 76.709] },
-                    { time: "13:00 - 14:00", title: "Lunch", description: "Lunch at Trattorias (wood-fired pizza with sea view)", coords: [8.7370, 76.711] },
-                    { time: "17:00 - 19:00", title: "Sunset at Cliffs", description: "Sunset drinks & snacks at Cafe del Mar", coords: [8.7379, 76.7160] }
-                ]
-            },
-            {
-                title: "Day 7",
-                subtitle: "Varkala - Workday & Beach",
-                center: [8.7379, 76.7160], budget: "₹3,500", accommodation: "Same cliff hotel", highlights: "Work-friendly cafés, cliff walks, beach relaxation",
-                timeline: [
-                    { time: "10:00 - 13:00", title: "Work Session", description: "Work at Cafe Sarwaa or Trip is Life (quiet & less crowded)", coords: [8.7379, 76.7160] },
-                    { time: "13:00 - 14:00", title: "Lunch", description: "Lunch at same café or Coffee Temple", coords: [8.7370, 76.711] },
-                    { time: "14:00 - 17:00", title: "Work/Explore", description: "Second work session or cliff walk", coords: [8.7379, 76.7160] },
-                    { time: "17:00 - 18:00", title: "Tea Break", description: "Tea/coffee break at Cafe del Mar", coords: [8.7379, 76.7160] }
-                ]
-            },
-            {
-                title: "Day 8",
-                subtitle: "Varkala to Trivandrum City",
-                center: [8.5241, 76.9366], budget: "₹4,600", accommodation: "Hotel in Trivandrum", highlights: "Padmanabhaswamy Temple, Napier Museum, East Fort Market",
-                timeline: [
-                    { time: "09:00 - 10:30", title: "Travel to Trivandrum", description: "Morning cliff walk, then bus to Trivandrum (~1.5h)", coords: [8.7379, 76.7160] },
-                    { time: "11:00 - 13:00", title: "City Tour", description: "Visit Padmanabhaswamy Temple exterior, Napier Museum & Kuthiramalika Palace", coords: [8.483, 76.943] },
-                    { time: "14:00 - 16:00", title: "East Fort Market", description: "Stroll East Fort Market; sample local snacks", coords: [8.487, 76.948] },
-                    { time: "18:00 - 21:00", title: "Dinner", description: "Dinner at Villa Maya or Ayyappan Veg", coords: [8.512, 76.924] }
-                ]
-            },
-            {
-                title: "Day 9",
-                subtitle: "Trivandrum Temples & Departure",
-                center: [8.5241, 76.9366], budget: "₹4,700", accommodation: "Same hotel or airport hotel", highlights: "Padmanabhaswamy Temple, Aazhimala Shiva Temple, 18m Shiva statue",
-                timeline: [
-                    { time: "06:00 - 07:30", title: "Temple Visit", description: "Early darshan at Padmanabhaswamy Temple (strict dress code)", coords: [8.483, 76.943] },
-                    { time: "09:00 - 10:00", title: "Travel to Aazhimala", description: "Travel to Aazhimala Siva Temple (~20km north)", coords: [8.3644, 76.9847] },
-                    { time: "10:00 - 12:00", title: "Aazhimala Temple", description: "Explore temple & coastal 18m Shiva statue (tallest in Kerala)", coords: [8.3644, 76.9847] },
-                    { time: "13:00 - 16:00", title: "Last-minute Shopping", description: "Shopping at MG Road or Chalai Market", coords: [8.487, 76.948] },
-                    { time: "18:00 - 21:00", title: "Farewell Dinner", description: "Farewell seafood dinner at Gods Own Country Kitchen", coords: [8.5241, 76.9366] }
-                ]
-            }
-        ];
-
-        function initMap() {
-            // Initialize map and explicitly disable scroll wheel zoom
-            map = L.map('map', { 
-                zoomControl: false, 
-                attributionControl: false,
-                scrollWheelZoom: false // This is the key to disable zoom on scroll
-            }).setView([9.9312, 76.2673], 9);
-            
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            }).addTo(map);
-        }
-
-        function updateUIForDay(dayIndex) {
-            const day = dayData[dayIndex];
-            document.getElementById('dayTitle').textContent = day.title;
-            document.getElementById('daySubtitle').textContent = day.subtitle;
-            
-            const timeline = document.getElementById('timeline');
-            timeline.innerHTML = '';
-            day.timeline.forEach((event, index) => {
-                const timelineItem = document.createElement('div');
-                timelineItem.className = 'timeline-item';
-                timelineItem.innerHTML = `<div class="timeline-marker"></div><div class="timeline-time">${event.time}</div><div class="timeline-title">${event.title}</div><div class="timeline-description">${event.description}</div>`;
-                
-                timelineItem.addEventListener('click', () => {
-                    // Remove 'selected' class from any other item
-                    const currentSelected = document.querySelector('.timeline-item.selected');
-                    if (currentSelected) {
-                        currentSelected.classList.remove('selected');
-                    }
-                    // Add 'selected' class to the clicked item
-                    timelineItem.classList.add('selected');
-
-                    map.flyTo(event.coords, 16);
-                    setTimeout(() => { if (markers[index]) markers[index].openPopup(); }, 800);
-                });
-                timeline.appendChild(timelineItem);
-            });
-
-            document.getElementById('budgetInfo').textContent = day.budget;
-            document.getElementById('accommodationInfo').textContent = day.accommodation;
-            document.getElementById('highlightsInfo').textContent = day.highlights;
-            
-            markers.forEach(marker => map.removeLayer(marker));
-            markers = [];
-            
-            day.timeline.forEach(event => {
-                const marker = L.marker(event.coords, { 
-                    icon: L.divIcon({ 
-                        className: 'pushpin-icon', 
-                        html: `📍`, 
-                        iconSize: [30, 30], 
-                        iconAnchor: [15, 30]
-                    }) 
-                }).addTo(map);
-                marker.bindPopup(`<b>${event.title}</b><br>${event.description}`);
-                markers.push(marker);
-            });
-            
-            if (markers.length > 0) {
-                const pane = document.getElementById('timelinePane');
-                const isPaneHidden = pane.classList.contains('is-hidden');
-                const leftPadding = isPaneHidden ? 50 : 440;
-                
-                const markerGroup = L.featureGroup(markers);
-                map.flyToBounds(markerGroup.getBounds(), { 
-                    paddingTopLeft: [leftPadding, 50],
-                    paddingBottomRight: [50, 50]
-                });
-            }
-
-            document.getElementById('prevBtn').disabled = dayIndex === 0;
-            document.getElementById('nextBtn').disabled = dayIndex === dayData.length - 1;
-            
-            document.querySelector('.timeline-content').scrollTop = 0;
-        }
-
-        function changeDay(direction) {
-            if (isChangingDay) return;
-            const newDay = currentDay + direction;
-            if (newDay >= 0 && newDay < dayData.length) {
-                isChangingDay = true;
-                currentDay = newDay;
-                updateUIForDay(currentDay);
-                setTimeout(() => { isChangingDay = false; }, 700);
-            }
-        }
-
-        async function getTravelTips() {
-            const modal = document.getElementById('tipsModal');
-            const modalBody = document.getElementById('modalBody');
-            modal.style.display = 'flex';
-            modalBody.innerHTML = '<div class="loader"></div>';
-
-            const day = dayData[currentDay];
-            const prompt = `You are a helpful travel assistant. Provide practical travel tips for a day in Kerala with the following plan: ${day.subtitle}. The activities include: ${day.timeline.map(t => t.title).join(', ')}. Focus on tips about what to wear for the weather and activities, local etiquette or customs to be aware of, and specific food recommendations for the area. Format the response in HTML with a <h2> for the title and <p> tags for paragraphs.`;
-
-            try {
-                let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
-                const payload = { contents: chatHistory };
-                const apiKey = "";
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-                
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
-
-                const result = await response.json();
-                
-                if (result.candidates && result.candidates[0]?.content?.parts?.[0]) {
-                    const text = result.candidates[0].content.parts[0].text;
-                    modalBody.innerHTML = text;
-                } else {
-                    throw new Error("Invalid response structure from API.");
-                }
-            } catch (error) {
-                console.error("Error fetching travel tips:", error);
-                modalBody.innerHTML = `<h2>Oops!</h2><p>Sorry, I couldn't fetch travel tips at the moment. Please check your connection or try again later.</p>`;
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            initMap();
-            updateUIForDay(currentDay);
-
-            document.getElementById('togglePaneBtn').addEventListener('click', () => {
-                const pane = document.getElementById('timelinePane');
-                pane.classList.toggle('is-hidden');
-                setTimeout(() => {
-                    map.invalidateSize();
-                    updateUIForDay(currentDay);
-                }, 500);
-            });
-            
-            // This listener handles changing days when scrolling outside the timeline pane
-            window.addEventListener('wheel', (e) => {
-                // Do not change day if the cursor is over the timeline or modal
-                if (e.target.closest('.timeline-pane') || e.target.closest('.modal-content')) return;
-                
-                e.preventDefault(); // Prevent default scroll action (like page scrolling)
-                if (e.deltaY > 0) { changeDay(1); } 
-                else { changeDay(-1); }
-            }, { passive: false });
-
-            document.getElementById('prevBtn').addEventListener('click', () => changeDay(-1));
-            document.getElementById('nextBtn').addEventListener('click', () => changeDay(1));
-            
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { changeDay(-1); } 
-                else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { changeDay(1); }
-            });
-
-            const tipsModal = document.getElementById('tipsModal');
-            document.getElementById('getTipsBtn').addEventListener('click', getTravelTips);
-            document.getElementById('closeModalBtn').addEventListener('click', () => tipsModal.style.display = 'none');
-            tipsModal.addEventListener('click', (e) => {
-                if (e.target === tipsModal) {
-                    tipsModal.style.display = 'none';
-                }
-            });
-        });
-    </script>
 </body>
 </html>
